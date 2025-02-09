@@ -28,28 +28,29 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.TextFrom = new System.Windows.Forms.Label();
+            this.FromTextLabel = new System.Windows.Forms.Label();
             this.ReplaceButton = new System.Windows.Forms.Button();
             this.ToText = new System.Windows.Forms.RichTextBox();
             this.FromText = new System.Windows.Forms.RichTextBox();
-            this.TextTo = new System.Windows.Forms.Label();
-            this.ConvertButton = new System.Windows.Forms.Button();
+            this.ToTextLabel = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
-            // TextFrom
+            // FromTextLabel
             // 
-            this.TextFrom.AutoSize = true;
-            this.TextFrom.Location = new System.Drawing.Point(178, 93);
-            this.TextFrom.Name = "TextFrom";
-            this.TextFrom.Size = new System.Drawing.Size(76, 16);
-            this.TextFrom.TabIndex = 1;
-            this.TextFrom.Text = "Original text";
+            this.FromTextLabel.AutoSize = true;
+            this.FromTextLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.FromTextLabel.Location = new System.Drawing.Point(144, 61);
+            this.FromTextLabel.Name = "FromTextLabel";
+            this.FromTextLabel.Size = new System.Drawing.Size(141, 29);
+            this.FromTextLabel.TabIndex = 1;
+            this.FromTextLabel.Text = "Original text";
             // 
             // ReplaceButton
             // 
-            this.ReplaceButton.Location = new System.Drawing.Point(362, 90);
+            this.ReplaceButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.ReplaceButton.Location = new System.Drawing.Point(326, 51);
             this.ReplaceButton.Name = "ReplaceButton";
-            this.ReplaceButton.Size = new System.Drawing.Size(75, 23);
+            this.ReplaceButton.Size = new System.Drawing.Size(135, 48);
             this.ReplaceButton.TabIndex = 2;
             this.ReplaceButton.Text = "Replace";
             this.ReplaceButton.UseVisualStyleBackColor = true;
@@ -57,51 +58,45 @@
             // 
             // ToText
             // 
-            this.ToText.Enabled = false;
-            this.ToText.Location = new System.Drawing.Point(401, 144);
+            this.ToText.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.ToText.Location = new System.Drawing.Point(398, 112);
             this.ToText.Name = "ToText";
-            this.ToText.Size = new System.Drawing.Size(350, 150);
+            this.ToText.ReadOnly = true;
+            this.ToText.Size = new System.Drawing.Size(350, 276);
             this.ToText.TabIndex = 4;
             this.ToText.Text = "";
             // 
             // FromText
             // 
-            this.FromText.Location = new System.Drawing.Point(46, 144);
+            this.FromText.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.FromText.Location = new System.Drawing.Point(43, 112);
             this.FromText.Name = "FromText";
-            this.FromText.Size = new System.Drawing.Size(350, 150);
+            this.FromText.Size = new System.Drawing.Size(350, 276);
             this.FromText.TabIndex = 5;
             this.FromText.Text = "";
+            this.FromText.TextChanged += new System.EventHandler(this.FromText_Changed);
             // 
-            // TextTo
+            // ToTextLabel
             // 
-            this.TextTo.AutoSize = true;
-            this.TextTo.Location = new System.Drawing.Point(551, 93);
-            this.TextTo.Name = "TextTo";
-            this.TextTo.Size = new System.Drawing.Size(91, 16);
-            this.TextTo.TabIndex = 6;
-            this.TextTo.Text = "Encrypted text";
-            // 
-            // ConvertButton
-            // 
-            this.ConvertButton.Location = new System.Drawing.Point(46, 300);
-            this.ConvertButton.Name = "ConvertButton";
-            this.ConvertButton.Size = new System.Drawing.Size(705, 60);
-            this.ConvertButton.TabIndex = 7;
-            this.ConvertButton.Text = "Convert";
-            this.ConvertButton.UseVisualStyleBackColor = true;
-            this.ConvertButton.Click += new System.EventHandler(this.ConvertButton_Click);
+            this.ToTextLabel.AutoSize = true;
+            this.ToTextLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.ToTextLabel.Location = new System.Drawing.Point(511, 61);
+            this.ToTextLabel.Name = "ToTextLabel";
+            this.ToTextLabel.Size = new System.Drawing.Size(164, 29);
+            this.ToTextLabel.TabIndex = 6;
+            this.ToTextLabel.Text = "Encrypted text";
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Controls.Add(this.ConvertButton);
-            this.Controls.Add(this.TextTo);
+            this.Controls.Add(this.ToTextLabel);
             this.Controls.Add(this.FromText);
             this.Controls.Add(this.ToText);
             this.Controls.Add(this.ReplaceButton);
-            this.Controls.Add(this.TextFrom);
+            this.Controls.Add(this.FromTextLabel);
+            this.MaximizeBox = false;
             this.Name = "Form1";
             this.Text = "Form1";
             this.ResumeLayout(false);
@@ -111,12 +106,11 @@
 
         #endregion
 
-        private System.Windows.Forms.Label TextFrom;
+        private System.Windows.Forms.Label FromTextLabel;
         private System.Windows.Forms.Button ReplaceButton;
         private System.Windows.Forms.RichTextBox ToText;
         private System.Windows.Forms.RichTextBox FromText;
-        private System.Windows.Forms.Label TextTo;
-        private System.Windows.Forms.Button ConvertButton;
+        private System.Windows.Forms.Label ToTextLabel;
     }
 }
 
