@@ -263,7 +263,7 @@ namespace WindowsFormsApp1
 
             symbolFrequencyes =
                 symbolFrequencyes.
-                OrderBy(t => t.Value).
+                OrderBy(t => -t.Value).
                 ToDictionary(t => t.Key, t => t.Value);
         }
     }
