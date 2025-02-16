@@ -1,11 +1,41 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Numerics;
+using System.Security.Authentication.ExtendedProtection;
 
 namespace WindowsFormsApp1
 {
     internal class BigIntegerHelper
     {
-        public static BigInteger Sqrt(BigInteger number)
+        Random rnd = new Random();
+
+        private BigInteger ExtendedGreatestCommonDivisor(
+            BigInteger x, BigInteger y, ref BigInteger a, ref BigInteger b
+            )
+        {
+            if (y == 0 || x == 0)
+            {
+                a = y == 0 ? 1 : 0;
+                b = 1 - a;
+                return y + x;
+            }
+
+            BigInteger gcd = 0;
+            if (y < x)
+            {
+                gcd = ExtendedGreatestCommonDivisor(x % y, y, ref a, ref b);
+                b -= x / y * a;
+            }
+            else
+            {
+                gcd = ExtendedGreatestCommonDivisor(x, y % x, ref a, ref b);
+                a -= y / x * b;
+            }
+
+            return gcd;
+        }
+
+        public BigInteger Sqrt(BigInteger number)
         {
             if (number < 0)
             {
@@ -29,7 +59,7 @@ namespace WindowsFormsApp1
             return x0;
         }
 
-        public static bool IsPrime(BigInteger number)
+        public bool IsPrime(BigInteger number)
         {
             if (number < 2)
             {
@@ -48,9 +78,8 @@ namespace WindowsFormsApp1
             return true;
         }
 
-        public static BigInteger GeneratePrime(int bitLength)
+        public BigInteger GeneratePrime(int bitLength)
         {
-            Random rnd = new Random();
             BigInteger number = BigInteger.One << (bitLength - 1);
             do
             {
@@ -59,5 +88,35 @@ namespace WindowsFormsApp1
 
             return number;
         }
+
+        public BigInteger CalculateModInverse(BigInteger number, BigInteger mod)
+        {
+            BigInteger a = 0, b = 0;
+            BigInteger gcd = ExtendedGreatestCommonDivisor(number, mod, ref a, ref b);
+
+            if (gcd != 1)
+            {
+                throw new ArgumentException("Error! Numbers are not coprime!");
+            }
+
+            return a < 0 ? a + mod : a;
+        }
+
+        public BigInteger CalculateCoprimeNumber(BigInteger f, int bitLenght)
+        {
+            BigInteger otherNumber = GeneratePrime(bitLenght);
+
+            while
+                (
+                !IsPrime(otherNumber) ||
+                BigInteger.GreatestCommonDivisor(otherNumber, f) != 1
+                )
+            {
+                otherNumber += 2;
+            }
+
+            return otherNumber;
+        }
     }
+
 }

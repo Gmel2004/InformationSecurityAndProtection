@@ -1,4 +1,6 @@
-﻿using System.Numerics;
+﻿using System;
+using System.Collections.Generic;
+using System.Numerics;
 
 namespace WindowsFormsApp1
 {
@@ -10,49 +12,29 @@ namespace WindowsFormsApp1
 
         public RSA(int bitLength)
         {
-            BigInteger p = BigIntegerHelper.GeneratePrime(bitLength);
-            BigInteger q = BigIntegerHelper.GeneratePrime(bitLength);
+            BigIntegerHelper biH = new BigIntegerHelper();
+            BigInteger p = biH.GeneratePrime(bitLength);
+            BigInteger q;
+
+            do
+            {
+                q = biH.GeneratePrime(bitLength);
+            } while (q == p);
+
             n = p * q;
             BigInteger f = (p - 1) * (q - 1);
-            e = CalculateE(f);
-            d = CalculateD(e, f);
-        }
+            e = biH.CalculateCoprimeNumber(f, bitLength);
+            d = biH.CalculateModInverse(e, f);
 
-        private BigInteger CalculateE(BigInteger f)
-        {
-            BigInteger e = 3;
-
-            while (BigInteger.GreatestCommonDivisor(e, f) != 1)
-            {
-                e += 2;
-            }
-
-            return e;
-        }
-
-        private BigInteger CalculateD(BigInteger e, BigInteger f)
-        {
-            BigInteger y = 0, d = 1;
-            BigInteger fOriginal = f;
-            BigInteger temp, quotient;
-
-            while (e > 1)
-            {
-                quotient = e / f;
-                temp = f;
-
-                f = e % f;
-                e = temp;
-                temp = y;
-
-                y = d - quotient * y;
-                d = temp;
-            }
-
-            if (d < 0)
-                d += fOriginal;
-
-            return d;
+            #if DEBUG
+            Console.Clear();
+            Console.WriteLine(p);
+            Console.WriteLine(q);
+            Console.WriteLine(n);
+            Console.WriteLine(f);
+            Console.WriteLine(e);
+            Console.WriteLine(d);
+            #endif
         }
 
         public BigInteger Encrypt(BigInteger messageData)

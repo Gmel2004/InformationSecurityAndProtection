@@ -20,6 +20,8 @@ namespace WindowsFormsApp1
             ToText.Text = isEncryptText ?
                 EncryptText(FromText.Text) :
                 DecryptText(FromText.Text);
+
+            // Return try catch
         }
 
         private void ReplaceButton_Click(object sender, EventArgs e)
@@ -33,12 +35,16 @@ namespace WindowsFormsApp1
 
         private string EncryptText(string text)
         {
+            // add blocks
             if (text.Length == 0)
             {
                 return string.Empty;
             }
 
-            return RSA.Encrypt(new BigInteger(Encoding.ASCII.GetBytes(text))).ToString();
+            byte[] textData = Encoding.ASCII.GetBytes(text);
+            Array.Reverse(textData);
+
+            return RSA.Encrypt(new BigInteger(textData)).ToString();
         }
 
         private string DecryptText(string text)
@@ -48,8 +54,16 @@ namespace WindowsFormsApp1
                 return string.Empty;
             }
 
-            return BitConverter.ToString(
-                RSA.Decrypt(new BigInteger(Encoding.ASCII.GetBytes(text))).ToByteArray());
+            try
+            {
+                var bytes = RSA.Decrypt(BigInteger.Parse(text)).ToByteArray();
+                Array.Reverse(bytes);
+                return Encoding.ASCII.GetString(bytes);
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
         }
 
         public Form1()
@@ -60,6 +74,7 @@ namespace WindowsFormsApp1
         private void GenerateNewKeysButton_Click(object sender, EventArgs e)
         {
             RSA = new RSA(bitLenght);
+            FromText_Changed(this, e); //
         }
     }
 }
