@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Numerics;
+using System.Text;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace WindowsFormsApp1
 {
@@ -37,14 +41,51 @@ namespace WindowsFormsApp1
             #endif
         }
 
-        public BigInteger Encrypt(BigInteger messageData)
+        public string Encrypt(string text)
         {
-            return BigInteger.ModPow(messageData, e, n);
+            if (text.Length == 0)
+            {
+                return string.Empty;
+            }
+
+            StringBuilder sb = new StringBuilder();
+            byte[] textData = Encoding.ASCII.GetBytes(text);
+            int maxBlockSize = n.ToByteArray().Length - 1;
+
+            int index = 0;
+            while (index < textData.Length)
+            {
+                int blockSize = Math.Min(maxBlockSize, textData.Length - index);
+                var block = textData.Skip(index).Take(blockSize).ToArray();
+                Array.Reverse(block);
+
+                BigInteger biFromBlock = new BigInteger(block);
+                sb.Append($" {BigInteger.ModPow(biFromBlock, e, n)}");
+
+                index += blockSize;
+            }
+
+
+            return sb.ToString(1, sb.Length - 1);
         }
 
-        public BigInteger Decrypt(BigInteger cipher)
+        public string Decrypt(string text)
         {
-            return BigInteger.ModPow(cipher, d, n);
+            if (text.Length == 0)
+            {
+                return string.Empty;
+            }
+
+            StringBuilder sb = new StringBuilder();
+            foreach (var item in text.Split().Select(t => BigInteger.Parse(t)))
+            {
+                var bytes = BigInteger.ModPow(item, d, n).ToByteArray();
+                Array.Reverse(bytes);
+
+                sb.Append(Encoding.ASCII.GetString(bytes));
+            }
+
+            return sb.ToString();
         }
     }
 }

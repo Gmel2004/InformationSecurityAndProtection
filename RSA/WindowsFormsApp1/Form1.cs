@@ -35,35 +35,12 @@ namespace WindowsFormsApp1
 
         private string EncryptText(string text)
         {
-            // add blocks
-            if (text.Length == 0)
-            {
-                return string.Empty;
-            }
-
-            byte[] textData = Encoding.ASCII.GetBytes(text);
-            Array.Reverse(textData);
-
-            return RSA.Encrypt(new BigInteger(textData)).ToString();
+            return RSA.Encrypt(text);
         }
 
         private string DecryptText(string text)
         {
-            if (text.Length == 0)
-            {
-                return string.Empty;
-            }
-
-            try
-            {
-                var bytes = RSA.Decrypt(BigInteger.Parse(text)).ToByteArray();
-                Array.Reverse(bytes);
-                return Encoding.ASCII.GetString(bytes);
-            }
-            catch (Exception e)
-            {
-                throw new Exception(e.Message);
-            }
+            return RSA.Decrypt(text);
         }
 
         public Form1()
