@@ -7,7 +7,7 @@ namespace WindowsFormsApp1
 {
     internal class BigIntegerHelper
     {
-        Random rnd = new Random();
+        private Random rnd = new Random();
 
         private BigInteger ExtendedGreatestCommonDivisor(
             BigInteger x, BigInteger y, ref BigInteger a, ref BigInteger b

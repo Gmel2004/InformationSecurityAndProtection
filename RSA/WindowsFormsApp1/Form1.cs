@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Drawing;
-using System.Numerics;
-using System.Text;
 using System.Windows.Forms;
 
 namespace WindowsFormsApp1
@@ -14,14 +12,26 @@ namespace WindowsFormsApp1
 
         private void FromText_Changed(object sender, EventArgs e)
         {
+            ConvertText();
+        }
+
+        private void ConvertText()
+        {
             ToText.ForeColor = Color.Black;
             ToText.Font = new Font(ToText.Font.FontFamily, 14);
 
-            ToText.Text = isEncryptText ?
-                EncryptText(FromText.Text) :
-                DecryptText(FromText.Text);
-
-            // Return try catch
+            try
+            {
+                ToText.Text = isEncryptText ?
+                    EncryptText(FromText.Text) :
+                    DecryptText(FromText.Text);
+            }
+            catch (Exception ex)
+            {
+                ToText.Text = ex.Message;
+                ToText.Font = new Font(ToText.Font.FontFamily, 25);
+                ToText.ForeColor = Color.Red;
+            }
         }
 
         private void ReplaceButton_Click(object sender, EventArgs e)
@@ -51,7 +61,7 @@ namespace WindowsFormsApp1
         private void GenerateNewKeysButton_Click(object sender, EventArgs e)
         {
             RSA = new RSA(bitLenght);
-            FromText_Changed(this, e); //
+            ConvertText();
         }
     }
 }

@@ -33,6 +33,7 @@
             this.ToText = new System.Windows.Forms.RichTextBox();
             this.FromText = new System.Windows.Forms.RichTextBox();
             this.ToTextLabel = new System.Windows.Forms.Label();
+            this.GenerateNewKeysButton = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // FromTextLabel
@@ -86,11 +87,23 @@
             this.ToTextLabel.TabIndex = 6;
             this.ToTextLabel.Text = "Encrypted text";
             // 
+            // GenerateNewKeysButton
+            // 
+            this.GenerateNewKeysButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.GenerateNewKeysButton.Location = new System.Drawing.Point(270, 394);
+            this.GenerateNewKeysButton.Name = "GenerateNewKeysButton";
+            this.GenerateNewKeysButton.Size = new System.Drawing.Size(253, 48);
+            this.GenerateNewKeysButton.TabIndex = 8;
+            this.GenerateNewKeysButton.Text = "Generate new keys";
+            this.GenerateNewKeysButton.UseVisualStyleBackColor = true;
+            this.GenerateNewKeysButton.Click += new System.EventHandler(this.GenerateNewKeysButton_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.GenerateNewKeysButton);
             this.Controls.Add(this.ToTextLabel);
             this.Controls.Add(this.FromText);
             this.Controls.Add(this.ToText);
@@ -111,6 +124,7 @@
         private System.Windows.Forms.RichTextBox ToText;
         private System.Windows.Forms.RichTextBox FromText;
         private System.Windows.Forms.Label ToTextLabel;
+        private System.Windows.Forms.Button GenerateNewKeysButton;
     }
 }
 

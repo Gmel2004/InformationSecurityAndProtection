@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Text;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace WindowsFormsApp1
 {
@@ -30,7 +27,7 @@ namespace WindowsFormsApp1
             e = biH.CalculateCoprimeNumber(f, bitLength);
             d = biH.CalculateModInverse(e, f);
 
-            #if DEBUG
+#if DEBUG
             Console.Clear();
             Console.WriteLine(p);
             Console.WriteLine(q);
@@ -38,7 +35,7 @@ namespace WindowsFormsApp1
             Console.WriteLine(f);
             Console.WriteLine(e);
             Console.WriteLine(d);
-            #endif
+#endif
         }
 
         public string Encrypt(string text)
@@ -76,16 +73,23 @@ namespace WindowsFormsApp1
                 return string.Empty;
             }
 
-            StringBuilder sb = new StringBuilder();
-            foreach (var item in text.Split().Select(t => BigInteger.Parse(t)))
+            try
             {
-                var bytes = BigInteger.ModPow(item, d, n).ToByteArray();
-                Array.Reverse(bytes);
+                StringBuilder sb = new StringBuilder();
+                foreach (var item in text.Split().Select(t => BigInteger.Parse(t)))
+                {
+                    var bytes = BigInteger.ModPow(item, d, n).ToByteArray();
+                    Array.Reverse(bytes);
 
-                sb.Append(Encoding.ASCII.GetString(bytes));
+                    sb.Append(Encoding.ASCII.GetString(bytes));
+                }
+
+                return sb.ToString();
             }
-
-            return sb.ToString();
+            catch
+            {
+                throw new Exception("Error. The text is not decipherable");
+            }
         }
     }
 }
