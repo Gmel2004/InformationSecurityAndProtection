@@ -29,12 +29,12 @@ namespace WindowsFormsApp1
 
 #if DEBUG
             Console.Clear();
-            Console.WriteLine(p);
-            Console.WriteLine(q);
-            Console.WriteLine(n);
-            Console.WriteLine(f);
-            Console.WriteLine(e);
-            Console.WriteLine(d);
+            Console.WriteLine($"p = {p}");
+            Console.WriteLine($"q = {q}");
+            Console.WriteLine($"n = {n}");
+            Console.WriteLine($"f = {f}");
+            Console.WriteLine($"e = {e}");
+            Console.WriteLine($"d = {d}");
 #endif
         }
 
