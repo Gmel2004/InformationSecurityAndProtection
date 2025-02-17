@@ -57,6 +57,7 @@ namespace WindowsFormsApp1
                 Array.Reverse(block);
 
                 BigInteger biFromBlock = new BigInteger(block);
+                Console.WriteLine(biFromBlock);
                 sb.Append($" {BigInteger.ModPow(biFromBlock, e, n)}");
 
                 index += blockSize;
