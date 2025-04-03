@@ -1,57 +1,45 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Timers;
 using WindowsFormsApp1;
 
 namespace LZWCompressor
 {
     public class CompressionProgressManager
     {
-        private Timer timer;
-        private List<IData> activeTasks = new List<IData>();
-
+        private readonly List<IData> activeTasks = new List<IData>();
+        private System.Timers.Timer timer;
         public event Action<double> ProgressUpdated;
-
-        public CompressionProgressManager() { }
 
         public void Start()
         {
-            timer = new Timer(100);
+            timer = new System.Timers.Timer(100);
             timer.Elapsed += OnTimerElapsed;
             timer.Start();
         }
 
-        public void AddTask(IData inputData)
+        public void AddTask(IData task)
         {
             lock (activeTasks)
-            {
-                activeTasks.Add(inputData);
-            }
+                activeTasks.Add(task);
         }
 
-        private void OnTimerElapsed(object sender, ElapsedEventArgs e)
+        private void OnTimerElapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
-            lock (activeTasks)
-            {
-                double totalProgress = 0;
-                foreach (var task in activeTasks)
-                {
-                    totalProgress += 100.0 * task.CurrentIndex / task.Length;
-                }
+            Console.WriteLine("fee");
+            double total = 0;
+            foreach (var task in activeTasks)
+                total += 100.0 * task.CurrentIndex / task.Length;
 
-                double averageProgress = activeTasks.Count > 0 ? totalProgress / activeTasks.Count : 0;
-                ProgressUpdated?.Invoke(averageProgress);
+            double avg = activeTasks.Count > 0 ? total / activeTasks.Count : 0;
+            ProgressUpdated?.Invoke(avg);
 
-                if (averageProgress >= 100.0)
-                {
-                    Stop();
-                }
-            }
+            if (avg >= 100)
+                Stop();
         }
 
         public void Stop()
         {
-            timer.Stop();
+            timer?.Stop();
             activeTasks.Clear();
         }
     }

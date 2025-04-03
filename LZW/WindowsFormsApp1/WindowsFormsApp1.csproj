@@ -58,9 +58,11 @@
     </Compile>
     <Compile Include="IData.cs" />
     <Compile Include="InputData.cs" />
+    <Compile Include="InputData78.cs" />
     <Compile Include="LZ78.cs" />
     <Compile Include="LZW.cs" />
     <Compile Include="OutData.cs" />
+    <Compile Include="OutData78.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="System\Timers\ElapsedEventArg.cs" />

@@ -1,95 +1,105 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Text;
+﻿using System;
+using System.Collections.Generic;
 
 namespace WindowsFormsApp1
 {
     public static class LZ78
     {
-        //change to work with inputData
-        public static byte[] Compress(byte[] input)
+        // Метод сжатия данных с использованием LZ78
+        public static byte[] Compress(InputData78 inputData)
         {
+            List<byte> compressedData = new List<byte>();
             Dictionary<string, int> dictionary = new Dictionary<string, int>();
-            for (int i = 0; i < 256; i++)
-            {
-                dictionary.Add(((char)i).ToString(), i);
-            }
-
             string current = "";
-            List<int> output = new List<int>();
-            int dictSize = 256;
+            int nextIndex = 1; // Индексация для словаря
 
-            foreach (byte b in input)
+            // Процесс сжатия
+            for (int i = 0; i < inputData.Length; i++)
             {
-                string next = current + (char)b;
-                if (dictionary.ContainsKey(next))
+                byte currentByte = inputData.Data[i];
+                current += (char)currentByte;
+
+                if (!dictionary.ContainsKey(current))
                 {
-                    current = next;
-                }
-                else
-                {
-                    output.Add(dictionary[current]);
-                    dictionary.Add(next, dictSize++);
-                    current = ((char)b).ToString();
+                    // Если текущая строка не найдена в словаре, добавляем её
+                    if (current.Length > 1)
+                    {
+                        // Если строка не пустая, сжимаем её
+                        int index = dictionary[current.Substring(0, current.Length - 1)];
+                        compressedData.Add((byte)(index >> 8)); // старший байт индекса
+                        compressedData.Add((byte)(index & 0xFF)); // младший байт индекса
+                    }
+                    else
+                    {
+                        // Если строка состоит из одного символа, добавляем 0 в индекс
+                        compressedData.Add(0); // индекс = 0
+                    }
+
+                    compressedData.Add(currentByte); // Добавляем текущий символ
+                    dictionary[current] = nextIndex++;  // Добавляем строку в словарь
+                    current = ""; // Обнуляем строку для следующей итерации
                 }
             }
 
+            // Обрабатываем оставшиеся данные
             if (!string.IsNullOrEmpty(current))
-                output.Add(dictionary[current]);
-
-            return ConvertToBytes(output);
-        }
-
-        public static byte[] Decompress(byte[] input)
-        {
-            List<int> compressed = ConvertToInts(input);
-            Dictionary<int, string> dictionary = new Dictionary<int, string>();
-            for (int i = 0; i < 256; i++)
             {
-                dictionary.Add(i, ((char)i).ToString());
-            }
-
-            string entry = dictionary[compressed[0]];
-            StringBuilder output = new StringBuilder(entry);
-            int dictSize = 256;
-
-            for (int i = 1; i < compressed.Count; i++)
-            {
-                string result;
-                if (dictionary.ContainsKey(compressed[i]))
-                    result = dictionary[compressed[i]];
-                else if (compressed[i] == dictSize)
-                    result = entry + entry[0];
+                if (current.Length > 1)
+                {
+                    int index = dictionary[current.Substring(0, current.Length - 1)];
+                    compressedData.Add((byte)(index >> 8)); // старший байт индекса
+                    compressedData.Add((byte)(index & 0xFF)); // младший байт индекса
+                }
                 else
-                    throw new InvalidDataException("Ошибка декодирования");
-
-                output.Append(result);
-                dictionary.Add(dictSize++, entry + result[0]);
-                entry = result;
+                {
+                    compressedData.Add(0); // индекс = 0
+                }
+                compressedData.Add((byte)current[current.Length - 1]);
             }
 
-            return Encoding.Default.GetBytes(output.ToString());
+            return compressedData.ToArray();
         }
 
-        private static byte[] ConvertToBytes(List<int> input)
+        // Метод распаковки данных с использованием LZ78
+        public static byte[] Decompress(OutData78 outData)
         {
-            byte[] bytes = new byte[input.Count * 4];
-            for (int i = 0; i < input.Count; i++)
-            {
-                byte[] intBytes = System.BitConverter.GetBytes(input[i]);
-                System.Buffer.BlockCopy(intBytes, 0, bytes, i * 4, 4);
-            }
-            return bytes;
-        }
+            List<byte> decompressedData = new List<byte>();
+            Dictionary<int, string> dictionary = new Dictionary<int, string>();
 
-        private static List<int> ConvertToInts(byte[] input)
-        {
-            List<int> integers = new List<int>();
-            for (int i = 0; i < input.Length; i += 4)
+            // Процесс распаковки
+            foreach (var (index, value) in outData.Data)
             {
-                integers.Add(System.BitConverter.ToInt32(input, i));
+                // Строка восстанавливается из словаря
+                string currentString = string.Empty;
+
+                // Если индекс не равен 0, восстанавливаем строку из словаря
+                if (index != 0)
+                {
+                    if (dictionary.ContainsKey(index))
+                    {
+                        currentString = dictionary[index];  // Восстанавливаем строку из словаря
+                    }
+                    else
+                    {
+                        // Ошибка: если индекс отсутствует в словаре
+                        throw new InvalidOperationException($"Ошибка: индекс {index} отсутствует в словаре.");
+                    }
+                }
+
+                // Добавляем текущий символ
+                currentString += (char)value;
+
+                // Добавляем восстановленную строку в результат
+                foreach (var byteChar in currentString)
+                {
+                    decompressedData.Add((byte)byteChar);
+                }
+
+                // Обновляем словарь
+                dictionary[index] = currentString;
             }
-            return integers;
+
+            return decompressedData.ToArray();
         }
     }
 }
