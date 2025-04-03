@@ -1,105 +1,111 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
+using System.Text;
 using System.Windows.Forms;
 
 namespace WindowsFormsApp1
 {
     public partial class Form1 : Form
     {
-        private DES _des;
-        private string _filePath;
+        private string filePath;
+        private DES des;
 
         public Form1()
         {
             InitializeComponent();
-            _des = new DES(); // Инициализация DES с автоматической генерацией ключа
         }
 
-        // Кнопка "Прикрепить файл"
         private void btnAttachFile_Click(object sender, EventArgs e)
         {
-            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
-                openFileDialog.Filter = "Все файлы (*.*)|*.*";
-                if (openFileDialog.ShowDialog() == DialogResult.OK)
-                {
-                    _filePath = openFileDialog.FileName;
-                    lblFilePath.Text = _filePath;
-                }
+                filePath = openFileDialog.FileName;
             }
         }
 
-        // Кнопка "Зашифровать"
         private void btnEncrypt_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(_filePath))
+            if (string.IsNullOrEmpty(filePath))
             {
-                MessageBox.Show("Файл не выбран.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Error: choose your file");
                 return;
             }
 
-            try
-            {
-                // Чтение данных из файла
-                byte[] fileData = File.ReadAllBytes(_filePath);
+            byte[] data = File.ReadAllBytes(filePath);
+            Console.Clear();
+            Console.WriteLine($"Original bytes: {string.Join(" ", data)}");
 
-                // Шифрование данных
-                byte[] encryptedData = _des.Encrypt(fileData);
+            byte[] encryptedData = des.Encrypt(data);
 
-                // Отображение зашифрованных данных в TextBox
-                txtEncryptedText.Text = BitConverter.ToString(encryptedData).Replace("-", "");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка при шифровании: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            string encryptedFilePath = filePath + ".enc";
+            File.WriteAllBytes(encryptedFilePath, encryptedData);
+            Console.WriteLine($"Encrypt bytes: {string.Join(" ", encryptedData)}");
         }
 
-        // Кнопка "Расшифровать"
         private void btnDecrypt_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(_filePath))
+            if (string.IsNullOrEmpty(filePath))
             {
-                MessageBox.Show("Файл не выбран.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Error: choose your file");
                 return;
             }
 
-            if (string.IsNullOrEmpty(txtEncryptedText.Text))
+            byte[] encryptedData = File.ReadAllBytes(filePath + ".enc");
+
+            byte[] decryptedData = des.Decrypt(encryptedData);
+
+            string decryptedFilePath = filePath + ".dec";
+            File.WriteAllBytes(decryptedFilePath, decryptedData);
+            Console.WriteLine($"Decrypt bytes: {string.Join(" ", decryptedData)}");
+        }
+
+        private void btnOpenResFile_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(filePath))
             {
-                MessageBox.Show("Нет данных для расшифрования.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Error: choose your file");
                 return;
             }
 
             try
             {
-                // Преобразование текста из TextBox в байты
-                string encryptedText = txtEncryptedText.Text;
-                byte[] encryptedData = StringToByteArray(encryptedText);
-
-                // Расшифрование данных
-                byte[] decryptedData = _des.Decrypt(encryptedData);
-
-                // Сохранение расшифрованных данных в файл
-                File.WriteAllBytes(_filePath, decryptedData);
-
-                MessageBox.Show("Файл успешно расшифрован и перезаписан.", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Process.Start("notepad.exe", filePath + ".dec");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                MessageBox.Show($"Ошибка при расшифровании: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Error: cannot open file");
             }
         }
 
-        // Вспомогательный метод для преобразования строки в массив байт
-        private byte[] StringToByteArray(string hex)
+        private void Form1_Load(object sender, EventArgs e)
         {
-            int length = hex.Length;
-            byte[] bytes = new byte[length / 2];
-            for (int i = 0; i < length; i += 2)
+
+        }
+
+        private void Form1_Shown(object sender, EventArgs e)
+        {
+            byte[] key = Encoding.ASCII.GetBytes("mykey123");
+            des = new DES(key);
+        }
+
+        private void btnOpenFile_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(filePath))
             {
-                bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
+                MessageBox.Show("Error: choose your file");
+                return;
             }
-            return bytes;
+
+            try
+            {
+                Process.Start("notepad.exe", filePath);
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Error: cannot open file");
+            }
         }
     }
 }

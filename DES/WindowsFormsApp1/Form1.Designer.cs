@@ -1,15 +1,12 @@
-﻿using System.Windows.Forms;
-
-namespace WindowsFormsApp1
+﻿namespace WindowsFormsApp1
 {
     partial class Form1
     {
         private System.ComponentModel.IContainer components = null;
-        private Button btnAttachFile;
-        private Label lblFilePath;
-        private Button btnEncrypt;
-        private TextBox txtEncryptedText;
-        private Button btnDecrypt;
+        private System.Windows.Forms.Button btnAttachFile;
+        private System.Windows.Forms.Button btnEncrypt;
+        private System.Windows.Forms.Button btnDecrypt;
+        private System.Windows.Forms.Button btnResOpenFile;
 
         protected override void Dispose(bool disposing)
         {
@@ -22,59 +19,119 @@ namespace WindowsFormsApp1
 
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.btnAttachFile = new System.Windows.Forms.Button();
-            this.lblFilePath = new System.Windows.Forms.Label();
             this.btnEncrypt = new System.Windows.Forms.Button();
-            this.txtEncryptedText = new System.Windows.Forms.TextBox();
             this.btnDecrypt = new System.Windows.Forms.Button();
+            this.btnResOpenFile = new System.Windows.Forms.Button();
+            this.bindingSource1 = new System.Windows.Forms.BindingSource(this.components);
+            this.btnOpenFile = new System.Windows.Forms.Button();
+            this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
+            ((System.ComponentModel.ISupportInitialize)(this.bindingSource1)).BeginInit();
+            this.tableLayoutPanel2.SuspendLayout();
             this.SuspendLayout();
-
+            // 
             // btnAttachFile
-            this.btnAttachFile.Location = new System.Drawing.Point(20, 20);
+            // 
+            this.btnAttachFile.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnAttachFile.Location = new System.Drawing.Point(4, 4);
+            this.btnAttachFile.Margin = new System.Windows.Forms.Padding(4);
             this.btnAttachFile.Name = "btnAttachFile";
-            this.btnAttachFile.Size = new System.Drawing.Size(150, 30);
-            this.btnAttachFile.Text = "Прикрепить файл";
+            this.btnAttachFile.Size = new System.Drawing.Size(321, 42);
+            this.btnAttachFile.TabIndex = 0;
+            this.btnAttachFile.Text = "Choose file";
+            this.btnAttachFile.UseVisualStyleBackColor = true;
             this.btnAttachFile.Click += new System.EventHandler(this.btnAttachFile_Click);
-
-            // lblFilePath
-            this.lblFilePath.AutoSize = true;
-            this.lblFilePath.Location = new System.Drawing.Point(180, 25);
-            this.lblFilePath.Name = "lblFilePath";
-            this.lblFilePath.Size = new System.Drawing.Size(0, 15);
-
+            // 
             // btnEncrypt
-            this.btnEncrypt.Location = new System.Drawing.Point(20, 70);
+            // 
+            this.btnEncrypt.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnEncrypt.Location = new System.Drawing.Point(4, 54);
+            this.btnEncrypt.Margin = new System.Windows.Forms.Padding(4);
             this.btnEncrypt.Name = "btnEncrypt";
-            this.btnEncrypt.Size = new System.Drawing.Size(150, 30);
-            this.btnEncrypt.Text = "Зашифровать";
+            this.btnEncrypt.Size = new System.Drawing.Size(321, 42);
+            this.btnEncrypt.TabIndex = 1;
+            this.btnEncrypt.Text = "Encrypt file";
+            this.btnEncrypt.UseVisualStyleBackColor = true;
             this.btnEncrypt.Click += new System.EventHandler(this.btnEncrypt_Click);
-
-            // txtEncryptedText
-            this.txtEncryptedText.Location = new System.Drawing.Point(20, 120);
-            this.txtEncryptedText.Multiline = true;
-            this.txtEncryptedText.Name = "txtEncryptedText";
-            this.txtEncryptedText.Size = new System.Drawing.Size(400, 150);
-            this.txtEncryptedText.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-
+            // 
             // btnDecrypt
-            this.btnDecrypt.Location = new System.Drawing.Point(20, 280);
+            // 
+            this.btnDecrypt.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnDecrypt.Location = new System.Drawing.Point(4, 104);
+            this.btnDecrypt.Margin = new System.Windows.Forms.Padding(4);
             this.btnDecrypt.Name = "btnDecrypt";
-            this.btnDecrypt.Size = new System.Drawing.Size(150, 30);
-            this.btnDecrypt.Text = "Расшифровать";
+            this.btnDecrypt.Size = new System.Drawing.Size(321, 42);
+            this.btnDecrypt.TabIndex = 2;
+            this.btnDecrypt.Text = "Decrypt file";
+            this.btnDecrypt.UseVisualStyleBackColor = true;
             this.btnDecrypt.Click += new System.EventHandler(this.btnDecrypt_Click);
-
-            // MainForm
-            this.ClientSize = new System.Drawing.Size(450, 350);
-            this.Controls.Add(this.btnAttachFile);
-            this.Controls.Add(this.lblFilePath);
-            this.Controls.Add(this.btnEncrypt);
-            this.Controls.Add(this.txtEncryptedText);
-            this.Controls.Add(this.btnDecrypt);
-            this.Name = "MainForm";
-            this.Text = "DES Шифрование";
+            // 
+            // btnResOpenFile
+            // 
+            this.btnResOpenFile.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnResOpenFile.Location = new System.Drawing.Point(4, 154);
+            this.btnResOpenFile.Margin = new System.Windows.Forms.Padding(4);
+            this.btnResOpenFile.Name = "btnResOpenFile";
+            this.btnResOpenFile.Size = new System.Drawing.Size(321, 42);
+            this.btnResOpenFile.TabIndex = 3;
+            this.btnResOpenFile.Text = "Open Decrypt file";
+            this.btnResOpenFile.UseVisualStyleBackColor = true;
+            this.btnResOpenFile.Click += new System.EventHandler(this.btnOpenResFile_Click);
+            // 
+            // btnOpenFile
+            // 
+            this.btnOpenFile.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnOpenFile.Location = new System.Drawing.Point(4, 204);
+            this.btnOpenFile.Margin = new System.Windows.Forms.Padding(4);
+            this.btnOpenFile.Name = "btnOpenFile";
+            this.btnOpenFile.Size = new System.Drawing.Size(321, 45);
+            this.btnOpenFile.TabIndex = 7;
+            this.btnOpenFile.Text = "Open original file";
+            this.btnOpenFile.UseVisualStyleBackColor = true;
+            this.btnOpenFile.Click += new System.EventHandler(this.btnOpenFile_Click);
+            // 
+            // tableLayoutPanel2
+            // 
+            this.tableLayoutPanel2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tableLayoutPanel2.ColumnCount = 1;
+            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel2.Controls.Add(this.btnResOpenFile, 0, 3);
+            this.tableLayoutPanel2.Controls.Add(this.btnOpenFile, 0, 4);
+            this.tableLayoutPanel2.Controls.Add(this.btnEncrypt, 0, 1);
+            this.tableLayoutPanel2.Controls.Add(this.btnDecrypt, 0, 2);
+            this.tableLayoutPanel2.Controls.Add(this.btnAttachFile, 0, 0);
+            this.tableLayoutPanel2.Location = new System.Drawing.Point(97, 71);
+            this.tableLayoutPanel2.Name = "tableLayoutPanel2";
+            this.tableLayoutPanel2.RowCount = 5;
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20F));
+            this.tableLayoutPanel2.Size = new System.Drawing.Size(329, 253);
+            this.tableLayoutPanel2.TabIndex = 8;
+            // 
+            // Form1
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.ClientSize = new System.Drawing.Size(522, 394);
+            this.Controls.Add(this.tableLayoutPanel2);
+            this.Margin = new System.Windows.Forms.Padding(4);
+            this.Name = "Form1";
+            this.Text = "DES";
+            this.Shown += new System.EventHandler(this.Form1_Shown);
+            ((System.ComponentModel.ISupportInitialize)(this.bindingSource1)).EndInit();
+            this.tableLayoutPanel2.ResumeLayout(false);
             this.ResumeLayout(false);
-            this.PerformLayout();
+
         }
+
+        private System.Windows.Forms.BindingSource bindingSource1;
+        private System.Windows.Forms.Button btnOpenFile;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
     }
 }
-
