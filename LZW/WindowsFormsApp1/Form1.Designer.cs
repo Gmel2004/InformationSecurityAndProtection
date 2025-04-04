@@ -3,15 +3,13 @@
     partial class Form1
     {
         private System.ComponentModel.IContainer components = null;
-        public System.Windows.Forms.Button btnAddFiles;
-        public System.Windows.Forms.Button btnCompress;
-        public System.Windows.Forms.Button btnDecompress;
-        public System.Windows.Forms.ListBox listBoxFiles;
-        public System.Windows.Forms.ProgressBar progressBar;
-        public System.Windows.Forms.Label lblStatus;
-        public System.Windows.Forms.RadioButton radioPrimaryCompression;
-        public System.Windows.Forms.RadioButton radioSecondaryCompression;
-        public System.Windows.Forms.GroupBox groupCompression;
+        private System.Windows.Forms.Button btnAddFiles;
+        private System.Windows.Forms.ListBox listBoxFiles;
+        private System.Windows.Forms.ProgressBar progressBar;
+        private System.Windows.Forms.Label lblStatus;
+        private System.Windows.Forms.Button btnCompress;
+        private System.Windows.Forms.Button btnDecompress;
+        private System.Windows.Forms.RadioButton radioSecondaryCompression;
 
         protected override void Dispose(bool disposing)
         {
@@ -25,80 +23,92 @@
         private void InitializeComponent()
         {
             this.btnAddFiles = new System.Windows.Forms.Button();
-            this.btnCompress = new System.Windows.Forms.Button();
-            this.btnDecompress = new System.Windows.Forms.Button();
             this.listBoxFiles = new System.Windows.Forms.ListBox();
             this.progressBar = new System.Windows.Forms.ProgressBar();
             this.lblStatus = new System.Windows.Forms.Label();
-            this.radioPrimaryCompression = new System.Windows.Forms.RadioButton();
+            this.btnCompress = new System.Windows.Forms.Button();
+            this.btnDecompress = new System.Windows.Forms.Button();
             this.radioSecondaryCompression = new System.Windows.Forms.RadioButton();
-            this.groupCompression = new System.Windows.Forms.GroupBox();
-
             this.SuspendLayout();
-
+            // 
             // btnAddFiles
-            this.btnAddFiles.Location = new System.Drawing.Point(20, 20);
-            this.btnAddFiles.Size = new System.Drawing.Size(120, 30);
+            // 
+            this.btnAddFiles.Location = new System.Drawing.Point(12, 12);
+            this.btnAddFiles.Name = "btnAddFiles";
+            this.btnAddFiles.Size = new System.Drawing.Size(75, 23);
+            this.btnAddFiles.TabIndex = 0;
             this.btnAddFiles.Text = "Add Files";
+            this.btnAddFiles.UseVisualStyleBackColor = true;
             this.btnAddFiles.Click += new System.EventHandler(this.btnAddFiles_Click);
-
-            // btnCompress
-            this.btnCompress.Location = new System.Drawing.Point(160, 20);
-            this.btnCompress.Size = new System.Drawing.Size(100, 30);
-            this.btnCompress.Text = "Compress";
-            this.btnCompress.Click += new System.EventHandler(this.btnCompress_Click);
-
-            // btnDecompress
-            this.btnDecompress.Location = new System.Drawing.Point(280, 20);
-            this.btnDecompress.Size = new System.Drawing.Size(100, 30);
-            this.btnDecompress.Text = "Decompress";
-            this.btnDecompress.Click += new System.EventHandler(this.btnDecompress_Click);
-
+            // 
             // listBoxFiles
-            this.listBoxFiles.Location = new System.Drawing.Point(20, 70);
-            this.listBoxFiles.Size = new System.Drawing.Size(360, 120);
-            this.listBoxFiles.AllowDrop = true;
-
-            // groupCompression (GroupBox для выбора степени сжатия)
-            this.groupCompression.Location = new System.Drawing.Point(20, 200);
-            this.groupCompression.Size = new System.Drawing.Size(360, 60);
-            this.groupCompression.Text = "Compression Type";
-
-            // radioPrimaryCompression
-            this.radioPrimaryCompression.Location = new System.Drawing.Point(10, 25);
-            this.radioPrimaryCompression.Size = new System.Drawing.Size(160, 20);
-            this.radioPrimaryCompression.Text = "Primary Compression";
-            this.radioPrimaryCompression.Checked = true; // По умолчанию выбрана первичная степень
-
-            // radioSecondaryCompression
-            this.radioSecondaryCompression.Location = new System.Drawing.Point(180, 25);
-            this.radioSecondaryCompression.Size = new System.Drawing.Size(160, 20);
-            this.radioSecondaryCompression.Text = "Secondary Compression";
-
-            // Добавляем радио-кнопки в GroupBox
-            this.groupCompression.Controls.Add(this.radioPrimaryCompression);
-            this.groupCompression.Controls.Add(this.radioSecondaryCompression);
-
+            // 
+            this.listBoxFiles.FormattingEnabled = true;
+            this.listBoxFiles.ItemHeight = 15;
+            this.listBoxFiles.Location = new System.Drawing.Point(12, 41);
+            this.listBoxFiles.Name = "listBoxFiles";
+            this.listBoxFiles.Size = new System.Drawing.Size(260, 184);
+            this.listBoxFiles.TabIndex = 1;
+            // 
             // progressBar
-            this.progressBar.Location = new System.Drawing.Point(20, 270);
-            this.progressBar.Size = new System.Drawing.Size(360, 20);
-
+            // 
+            this.progressBar.Location = new System.Drawing.Point(12, 231);
+            this.progressBar.Name = "progressBar";
+            this.progressBar.Size = new System.Drawing.Size(260, 23);
+            this.progressBar.TabIndex = 2;
+            // 
             // lblStatus
-            this.lblStatus.Location = new System.Drawing.Point(20, 300);
-            this.lblStatus.Size = new System.Drawing.Size(360, 20);
-            this.lblStatus.Text = "Ready";
-
+            // 
+            this.lblStatus.AutoSize = true;
+            this.lblStatus.Location = new System.Drawing.Point(12, 257);
+            this.lblStatus.Name = "lblStatus";
+            this.lblStatus.Size = new System.Drawing.Size(0, 15);
+            this.lblStatus.TabIndex = 3;
+            // 
+            // btnCompress
+            // 
+            this.btnCompress.Location = new System.Drawing.Point(12, 275);
+            this.btnCompress.Name = "btnCompress";
+            this.btnCompress.Size = new System.Drawing.Size(75, 23);
+            this.btnCompress.TabIndex = 4;
+            this.btnCompress.Text = "Compress";
+            this.btnCompress.UseVisualStyleBackColor = true;
+            this.btnCompress.Click += new System.EventHandler(this.btnCompress_ClickAsync);
+            // 
+            // btnDecompress
+            // 
+            this.btnDecompress.Location = new System.Drawing.Point(93, 275);
+            this.btnDecompress.Name = "btnDecompress";
+            this.btnDecompress.Size = new System.Drawing.Size(75, 23);
+            this.btnDecompress.TabIndex = 5;
+            this.btnDecompress.Text = "Decompress";
+            this.btnDecompress.UseVisualStyleBackColor = true;
+            this.btnDecompress.Click += new System.EventHandler(this.btnDecompress_Click);
+            // 
+            // radioSecondaryCompression
+            // 
+            this.radioSecondaryCompression.AutoSize = true;
+            this.radioSecondaryCompression.Location = new System.Drawing.Point(12, 304);
+            this.radioSecondaryCompression.Name = "radioSecondaryCompression";
+            this.radioSecondaryCompression.Size = new System.Drawing.Size(153, 19);
+            this.radioSecondaryCompression.TabIndex = 6;
+            this.radioSecondaryCompression.Text = "Apply Secondary Compression";
+            this.radioSecondaryCompression.UseVisualStyleBackColor = true;
+            // 
             // Form1
-            this.ClientSize = new System.Drawing.Size(400, 340);
-            this.Controls.Add(this.btnAddFiles);
-            this.Controls.Add(this.btnCompress);
+            // 
+            this.ClientSize = new System.Drawing.Size(284, 340);
+            this.Controls.Add(this.radioSecondaryCompression);
             this.Controls.Add(this.btnDecompress);
-            this.Controls.Add(this.listBoxFiles);
-            this.Controls.Add(this.groupCompression);
-            this.Controls.Add(this.progressBar);
+            this.Controls.Add(this.btnCompress);
             this.Controls.Add(this.lblStatus);
-            this.Text = "LZW Compressor";
+            this.Controls.Add(this.progressBar);
+            this.Controls.Add(this.listBoxFiles);
+            this.Controls.Add(this.btnAddFiles);
+            this.Name = "Form1";
+            this.Text = "LZW Compression";
             this.ResumeLayout(false);
+            this.PerformLayout();
         }
     }
 }

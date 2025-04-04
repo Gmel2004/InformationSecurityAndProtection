@@ -1,45 +1,38 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using WindowsFormsApp1;
 
 namespace LZWCompressor
 {
-    public class CompressionProgressManager
+    public class ProgressManager
     {
-        private readonly List<IData> activeTasks = new List<IData>();
+        private List<IData> activeTasks = new List<IData>();
         private System.Timers.Timer timer;
         public event Action<double> ProgressUpdated;
 
-        public void Start()
+        public void Start<T>(List<T> tasks) where T : IData
         {
+            if (tasks.Count == 0)
+            {
+                throw new Exception("activeTasks cannot be zero");
+            }
+            activeTasks = tasks.Select(t => (IData)t).ToList();
             timer = new System.Timers.Timer(100);
             timer.Elapsed += OnTimerElapsed;
             timer.Start();
         }
 
-        public void AddTask(IData task)
-        {
-            lock (activeTasks)
-                activeTasks.Add(task);
-        }
-
         private void OnTimerElapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
-            Console.WriteLine("fee");
-            double total = 0;
-            foreach (var task in activeTasks)
-                total += 100.0 * task.CurrentIndex / task.Length;
-
-            double avg = activeTasks.Count > 0 ? total / activeTasks.Count : 0;
+            var avg = activeTasks.Select(t => 100 * t.CurrentIndex / t.Length).Average();
             ProgressUpdated?.Invoke(avg);
-
-            if (avg >= 100)
-                Stop();
         }
 
         public void Stop()
         {
-            timer?.Stop();
+            OnTimerElapsed(null, null);
+            timer.Stop();
             activeTasks.Clear();
         }
     }

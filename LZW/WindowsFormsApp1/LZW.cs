@@ -1,128 +1,126 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 using WindowsFormsApp1;
 
 namespace LZWCompressor
 {
     public static class LZW
     {
+        private const int MaxBits = 12;
+        private const int MaxCode = (1 << MaxBits) - 1;
+
         public static byte[] Compress(InputData input)
         {
-            var dictionary = new Dictionary<Sequence, int>(new SequenceComparer());
-            for (int i = 0; i < 256; i++)
-            {
-                dictionary.Add(new Sequence(new byte[] { (byte)i }), i);
-            }
+            var dictionary = new Dictionary<(int prefix, byte next), int>(4096);
 
-            Sequence current = new Sequence(new byte[0]);
-            List<int> output = new List<int>();
+            // Инициализация словаря для отдельных байтов
+            for (int i = 0; i < 256; i++)
+                dictionary.Add((-1, (byte)i), i);
+
+            int currentPrefix = -1;
+            var outputCodes = new List<int>();
 
             while (input.CurrentIndex < input.Length)
             {
                 byte nextByte = input.Data[input.CurrentIndex];
                 input.CurrentIndex++;
 
-                Sequence next = current.Append(nextByte);
-                if (dictionary.ContainsKey(next))
+                var key = (currentPrefix, nextByte);
+
+                if (dictionary.TryGetValue(key, out int code))
                 {
-                    current = next;
+                    currentPrefix = code;
                 }
                 else
                 {
-                    output.Add(dictionary[current]);
-                    dictionary.Add(next, dictionary.Count);
-                    current = new Sequence(new byte[] { nextByte });
+                    outputCodes.Add(currentPrefix);
+
+                    if (dictionary.Count < MaxCode)
+                        dictionary.Add(key, dictionary.Count);
+
+                    currentPrefix = nextByte;
                 }
             }
 
-            output.Add(dictionary[current]);
-            return IntegerToBytes(output);
+            outputCodes.Add(currentPrefix);
+            return PackCodes(outputCodes);
         }
 
         public static byte[] Decompress(OutData outData)
         {
-            var dictionary = new Dictionary<int, List<byte>>();
-            // Инициализация словаря: коды 0-255 соответствуют байтам 0x00-0xFF
+            var dictionary = new Dictionary<int, (byte[] data, byte first)>();
+
+            // Инициализация базового словаря
             for (int i = 0; i < 256; i++)
-            {
-                dictionary.Add(i, new List<byte> { (byte)i });
-            }
+                dictionary[i] = (new[] { (byte)i }, (byte)i);
 
-            List<byte> output = new List<byte>();
+            var output = new List<byte>(outData.Length * 2);
             int prevCode = outData.Data[0];
-            output.AddRange(dictionary[prevCode]);
-            outData.CurrentIndex = 1; // Прогресс декомпрессии
+            outData.CurrentIndex = 1;
 
-            for (int i = 1; i < outData.Data.Count; i++)
+            if (dictionary.TryGetValue(prevCode, out var entry))
+                output.AddRange(entry.data);
+
+            while (outData.CurrentIndex < outData.Length)
             {
-                int currentCode = outData.Data[i];
-                List<byte> entry;
+                int currCode = outData.Data[outData.CurrentIndex];
+                outData.CurrentIndex++;
 
-                if (dictionary.ContainsKey(currentCode))
+                byte[] decoded;
+                byte firstByte;
+
+                if (dictionary.TryGetValue(currCode, out var currEntry))
                 {
-                    entry = dictionary[currentCode];
+                    decoded = currEntry.data;
+                    firstByte = currEntry.first;
                 }
-                else if (currentCode == dictionary.Count)
+                else if (currCode == dictionary.Count)
                 {
-                    // Специальный случай: prevEntry + первый байт prevEntry
-                    entry = new List<byte>(dictionary[prevCode]);
-                    entry.Add(dictionary[prevCode][0]);
+                    firstByte = dictionary[prevCode].first;
+                    decoded = dictionary[prevCode].data.Append(firstByte).ToArray();
                 }
                 else
                 {
-                    throw new InvalidDataException($"Некорректный код: {currentCode}.");
+                    throw new InvalidOperationException($"Invalid code: {currCode}");
                 }
 
-                output.AddRange(entry);
+                output.AddRange(decoded);
 
-                // Добавляем новую последовательность в словарь: prevEntry + первый байт entry
-                List<byte> newEntry = new List<byte>(dictionary[prevCode]);
-                newEntry.Add(entry[0]);
-                dictionary.Add(dictionary.Count, newEntry);
+                // Добавляем новую комбинацию в словарь
+                var prevEntry = dictionary[prevCode];
+                var newData = prevEntry.data.Append(firstByte).ToArray();
+                dictionary[dictionary.Count] = (newData, newData[0]);
 
-                prevCode = currentCode;
-                outData.CurrentIndex++; // Обновление прогресса
+                prevCode = currCode;
             }
 
             return output.ToArray();
         }
 
-        private static byte[] IntegerToBytes(List<int> input)
+        private static byte[] PackCodes(List<int> codes)
         {
-            byte[] bytes = new byte[input.Count * 4];
-            for (int i = 0; i < input.Count; i++)
+            int bitBuffer = 0;
+            int bitsInBuffer = 0;
+            var output = new List<byte>();
+
+            foreach (int code in codes)
             {
-                byte[] intBytes = BitConverter.GetBytes(input[i]);
-                Buffer.BlockCopy(intBytes, 0, bytes, i * 4, 4);
+                bitBuffer |= code << bitsInBuffer;
+                bitsInBuffer += MaxBits;
+
+                while (bitsInBuffer >= 8)
+                {
+                    output.Add((byte)(bitBuffer & 0xFF));
+                    bitBuffer >>= 8;
+                    bitsInBuffer -= 8;
+                }
             }
-            return bytes;
+
+            if (bitsInBuffer > 0)
+                output.Add((byte)bitBuffer);
+
+            return output.ToArray();
         }
-    }
-
-    public class Sequence
-    {
-        public byte[] Data { get; }
-
-        public Sequence(byte[] data)
-        {
-            Data = data;
-        }
-
-        public Sequence Append(byte b)
-        {
-            byte[] newData = new byte[Data.Length + 1];
-            Data.CopyTo(newData, 0);
-            newData[newData.Length - 1] = b;
-            return new Sequence(newData);
-        }
-    }
-
-    public class SequenceComparer : IEqualityComparer<Sequence>
-    {
-        public bool Equals(Sequence x, Sequence y) => x.Data.SequenceEqual(y.Data);
-        public int GetHashCode(Sequence obj) => obj.Data.Aggregate(0, (a, b) => a ^ b);
     }
 }

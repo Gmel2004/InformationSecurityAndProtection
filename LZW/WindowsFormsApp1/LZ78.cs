@@ -16,6 +16,7 @@ namespace WindowsFormsApp1
             // Процесс сжатия
             for (int i = 0; i < inputData.Length; i++)
             {
+                inputData.CurrentIndex++;
                 byte currentByte = inputData.Data[i];
                 current += (char)currentByte;
 
