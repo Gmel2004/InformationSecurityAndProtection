@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using WindowsFormsApp1;
@@ -11,8 +11,11 @@ namespace LZWCompressor
 {
     public partial class Form1 : Form
     {
-        private readonly ProgressManager progressManager = new ProgressManager();
+        private ProgressManager progressManager =
+            new ProgressManager();
         private string currentStage = "";
+        private bool isSecondCompress = false;
+        private bool isProcessStoped = true;
 
         public Form1()
         {
@@ -37,112 +40,89 @@ namespace LZWCompressor
             using (var dialog = new OpenFileDialog())
             {
                 dialog.Multiselect = true;
-                // Объединяем bmp и txt в один фильтр
-                dialog.Filter = "Image and Text Files (*.bmp;*.txt)|*.bmp;*.txt|Compressed Files (*.lzw;*.lzw2)|*.lzw;*.lzw2";
+
+                dialog.Filter =
+                    "Image and Text Files (*.bmp;*.txt)|*.bmp;*.txt|" +
+                    "Compressed Files (*.lzw;*.lzw2)|*.lzw;*.lzw2";
+
                 if (dialog.ShowDialog() == DialogResult.OK)
+                {
                     listBoxFiles.Items.AddRange(dialog.FileNames);
+                }
             }
         }
 
         private async void btnCompress_ClickAsync(object sender, EventArgs e)
         {
-            var files = GetValidFiles(".bmp", ".txt");
-            if (files.Count == 0) return;
+            isProcessStoped = false;
+            var validFiles = GetValidFiles(".bmp", ".txt");
+
+            if (validFiles.Count == 0)
+            {
+                return;
+            }
 
             try
             {
-                List<InputData> datas = new List<InputData>();
-                List<InputData78> lzwResults = new List<InputData78>();
-
-                foreach (var file in files)
+                if (isSecondCompress)
                 {
-                    currentStage = "Primary Compression";
-                    var inputLZW = new InputData(File.ReadAllBytes(file));
-
-                    datas.Add(inputLZW);
+                    await CompressTwice(validFiles);
                 }
-
-                Console.WriteLine("---------------");
-                progressManager.Start(datas);
-
-                await Factory1(files, datas, lzwResults);
-
-                progressManager.Stop();
-
-                if (!radioSecondaryCompression.Checked) return;
-
-                progressManager.Start(lzwResults);
-
-                await Factory2(files, lzwResults);
-
-                progressManager.Stop();
+                else
+                {
+                    await CompressOnce(validFiles);
+                }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show
+                    (
+                        $"Error: {ex.Message}",
+                        "Error",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error
+                    );
             }
-        }
 
-        private async Task Factory2(List<string> files, List<InputData78> lzwResults)
-        {
-            await Task.Factory.StartNew(() =>
-                Parallel.For(0, lzwResults.Count, i =>
-                {
-                    byte[] finalResult = LZ78.Compress(lzwResults[i]);
-                    string outputFilePath = Path.ChangeExtension(files[i], Path.GetExtension(files[i]) + ".lzw2");
-                    File.WriteAllBytes(outputFilePath, finalResult);
-                })
-            );
-        }
-
-        private async Task Factory1(List<string> files, List<InputData> datas, List<InputData78> lzwResults)
-        {
-            await Task.Factory.StartNew(() =>
-                Parallel.For(0, datas.Count, i =>
-                {
-                    byte[] lzwResult = LZW.Compress(datas[i]);
-
-                    string outputFilePath = Path.ChangeExtension(files[i], Path.GetExtension(files[i]) + ".lzw");
-
-                    if (radioSecondaryCompression.Checked)
-                    {
-                        var inputLZ78 = new InputData78(lzwResult);
-                        lzwResults.Add(inputLZ78);
-                    }
-                    else
-                    {
-                        File.WriteAllBytes(outputFilePath, lzwResult);
-                    }
-                })
-            );
-        }
-
-        private List<string> GetValidFiles(params string[] validExtensions)
-        {
-            var validFiles = new List<string>();
-            foreach (var item in listBoxFiles.Items)
-            {
-                string path = item.ToString();
-                bool valid = validExtensions.Any(ext => Path.GetExtension(path).Equals(ext, StringComparison.OrdinalIgnoreCase));
-                if (valid)
-                    validFiles.Add(path);
-                else
-                    MessageBox.Show($"Invalid file: {path}", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
-            return validFiles;
+            isProcessStoped = true;
         }
 
         private async void btnDecompress_Click(object sender, EventArgs e)
         {
-            //string ext = radioSecondaryCompression.Checked ? ".lzw2" : ".lzw";
-            //var files = GetValidFiles(ext);
-            //if (files.Count == 0) return;
+            isProcessStoped = false;
+            var lzwFiles = GetValidFiles(".lzw");
+            var lz78Files = GetValidFiles(".lz78");
+
+            try
+            {
+                if (lzwFiles.Count > 0)
+                {
+                    await DecompressOnce(lzwFiles);
+                }
+
+                if (lz78Files.Count > 0)
+                {
+                    await DecompressTwice(lz78Files);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show
+                    (
+                        $"Error: {ex.Message}",
+                        "Error",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error
+                    );
+            }
+
+            isProcessStoped = true;
 
             //try
             //{
             //    foreach (var file in files)
             //    {
-            //        byte[] data = File.ReadAllBytes(file);
+            //        
 
             //        ThreadPool.QueueUserWorkItem(_ =>
             //        {
@@ -150,10 +130,7 @@ namespace LZWCompressor
             //            {
             //                if (radioSecondaryCompression.Checked)
             //                {
-            //                    currentStage = "Secondary Decompression";
-            //                    var outDataLZ78 = new OutData78(ConvertBytesToTuples(data));
-            //                    progressManager.AddTask(outDataLZ78);
-            //                    byte[] lz78Result = LZ78.Decompress(outDataLZ78);
+            //                    
 
             //                    currentStage = "Primary Decompression";
             //                    var outDataLZW = new OutData(BytesToIntegers(lz78Result));
@@ -181,6 +158,211 @@ namespace LZWCompressor
             //{
             //    MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             //}
+        }
+
+        private async Task DecompressOnce(List<string> lzwFiles)
+        {
+            var lzwResult = await DecompressByLZW(InitLZWDecompress(lzwFiles));
+            var oldExtension = lzwFiles[0].Split('.')[1];
+            ChangeDataFiles(lzwFiles, lzwResult, oldExtension);
+        }
+
+        private async Task DecompressTwice(List<string> lz78Files)
+        {
+            var lzwResult = await DecompressByLZW78(InitLZ78Decompress(lzwFiles));
+            var oldExtension = lzwFiles[0].Split('.')[1];
+            ChangeDataFiles(lzwFiles, lzwResult, oldExtension);
+        }
+
+        private List<OutData> InitLZWDecompress(List<string> lzwFiles)
+        {
+            currentStage = "LZW Decompression";
+            UpdateProgressBar(0);
+            var data = lzwFiles.
+                Select
+                (
+                    t =>
+                    new OutData
+                    (
+                        BytesToIntegers(File.ReadAllBytes(t))
+                    )
+                ).ToList();
+
+            return data;
+        }
+
+        private List<OutData78> InitLZ78Decompress(List<string> lzwFiles)
+        {
+            currentStage = "LZ78 Decompression";
+            UpdateProgressBar(0);
+            var data = lzwFiles.
+                Select
+                (
+                    t =>
+                    new OutData78
+                    (
+                        ConvertBytesToTuples(File.ReadAllBytes(t))
+                    )
+                ).ToList();
+
+            return data;
+        }
+
+        private void btnCompressTwice_CheckedChanged(object sender, EventArgs e)
+        {
+            if (isProcessStoped)
+            {
+                isSecondCompress = btnCompressTwice.Checked;
+            }
+            else
+            {
+                btnCompressTwice.Checked = isSecondCompress;
+            }
+        }
+
+        private static void ChangeDataFiles
+            (
+                List<string> files,
+                byte[][] newData,
+                string newExtension
+            )
+        {
+            for (int i = 0; i < files.Count; i++)
+            {
+                string outputFilePath =
+                    Path.ChangeExtension
+                    (
+                        files[i],
+                        $"{Path.GetExtension(files[i])}.{newExtension}"
+                    );
+
+                File.WriteAllBytes(outputFilePath, newData[i]);
+            }
+        }
+
+        private async Task CompressOnce(List<string> files)
+        {
+            var lzwResult = await CompressByLZW(InitLZWCompress(files));
+            ChangeDataFiles(files, lzwResult, "lzw");
+        }
+
+        private async Task CompressTwice(List<string> files)
+        {
+            var lzwResult = await CompressByLZW(InitLZWCompress(files));
+            var lz78Result = await CompressByLZ78(InitLZ78Compress(lzwResult));
+            ChangeDataFiles(files, lz78Result, "lzw2");
+        }
+
+        private List<InputData> InitLZWCompress(List<string> files)
+        {
+            currentStage = "LZW Compression";
+            UpdateProgressBar(0);
+
+            return
+                files.
+                Select
+                (
+                    t => new InputData(File.ReadAllBytes(t))
+                ).
+                ToList();
+        }
+
+        private List<InputDataLZ78> InitLZ78Compress(byte[][] lzwResult)
+        {
+            currentStage = "LZ78 Compression";
+            UpdateProgressBar(0);
+            return lzwResult.Select(t => new InputDataLZ78(t)).ToList();
+        }
+
+        private async Task<byte[][]> DecompressByLZW(List<OutData> data)
+        {
+            byte[][] decompressedData = new byte[data.Count][];
+            progressManager.Start(data);
+            await Task.Run(() =>
+                Parallel.For(0, data.Count, i =>
+                {
+                    lock (decompressedData)
+                    {
+                        decompressedData[i] = LZW.Decompress(data[i]);
+                    }
+                })
+            );
+            progressManager.Stop();
+
+            return decompressedData;
+        }
+
+        private async Task<byte[][]> CompressByLZW(List<InputData> data)
+        {
+            byte[][] compressedData = new byte[data.Count][];
+            progressManager.Start(data);
+            await Task.Run(() =>
+                Parallel.For(0, data.Count, i =>
+                {
+                    lock (compressedData)
+                    {
+                        compressedData[i] = LZW.Compress(data[i]);
+                    }
+                })
+            );
+            progressManager.Stop();
+
+            return compressedData;
+        }
+
+        private async Task<byte[][]> CompressByLZ78(List<InputDataLZ78> data)
+        {
+            byte[][] compressedData = new byte[data.Count][];
+            progressManager.Start(data);
+            await Task.Run(() =>
+                Parallel.For(0, data.Count, i =>
+                {
+                    lock (compressedData)
+                    {
+                        compressedData[i] = LZ78.Compress(data[i]);
+                    }
+                })
+            );
+            progressManager.Stop();
+
+            return compressedData;
+        }
+
+        private List<string> GetValidFiles(params string[] validExtensions)
+        {
+            var validFiles = new List<string>();
+
+            foreach (var item in listBoxFiles.SelectedItems)
+            {
+                string path = item.ToString();
+
+                bool valid =
+                    validExtensions.
+                    Any
+                    (
+                        t =>
+                        Path.GetExtension(path).
+                        Equals(t, StringComparison.OrdinalIgnoreCase)
+                    );
+
+                if (valid)
+                {
+                    validFiles.Add(path);
+                }
+                else
+                {
+                    MessageBox.
+                        Show
+                        (
+                            $"Invalid file: {path}",
+                            "Warning",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Warning
+                        );
+                }
+            }
+
+            return validFiles;
         }
 
         private static List<(int, byte)> ConvertBytesToTuples(byte[] input)

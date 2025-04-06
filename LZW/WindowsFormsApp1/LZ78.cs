@@ -6,7 +6,7 @@ namespace WindowsFormsApp1
     public static class LZ78
     {
         // Метод сжатия данных с использованием LZ78
-        public static byte[] Compress(InputData78 inputData)
+        public static byte[] Compress(InputDataLZ78 inputData)
         {
             List<byte> compressedData = new List<byte>();
             Dictionary<string, int> dictionary = new Dictionary<string, int>();
