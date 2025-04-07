@@ -13,6 +13,9 @@ namespace LZWCompressor
     {
         private ProgressManager progressManager =
             new ProgressManager();
+        private LZW LZW = new LZW();
+        private LZ78 LZ78 = new LZ78();
+
         private string currentStage = "";
         private bool isSecondCompress = false;
         private bool isProcessStoped = true;
@@ -43,7 +46,8 @@ namespace LZWCompressor
 
                 dialog.Filter =
                     "Image and Text Files (*.bmp;*.txt)|*.bmp;*.txt|" +
-                    "Compressed Files (*.lzw;*.lzw2)|*.lzw;*.lzw2";
+                    "Compressed Files (*.lzw;*.lzw2)|*bmp.lzw;*bmp.lzw2;" +
+                    "*txt.lzw;*txt.lzw2";
 
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
@@ -54,11 +58,18 @@ namespace LZWCompressor
 
         private async void btnCompress_ClickAsync(object sender, EventArgs e)
         {
+            if (!isProcessStoped)
+            {
+                MessageBox.Show("Wait for the operation to end");
+                return;
+            }
+
             isProcessStoped = false;
             var validFiles = GetValidFiles(".bmp", ".txt");
 
             if (validFiles.Count == 0)
             {
+                isProcessStoped = true;
                 return;
             }
 
@@ -89,9 +100,33 @@ namespace LZWCompressor
 
         private async void btnDecompress_Click(object sender, EventArgs e)
         {
+            if (!isProcessStoped)
+            {
+                MessageBox.Show("Wait for the operation to end");
+                return;
+            }
+
             isProcessStoped = false;
-            var lzwFiles = GetValidFiles(".lzw");
-            var lz78Files = GetValidFiles(".lz78");
+            var validFiles = GetValidFiles(".lzw", ".lzw2");
+
+            List<string> lzwFiles = new List<string>();
+            List<string> lz78Files = new List<string>();
+
+            foreach (var i in validFiles)
+            {
+                if
+                (
+                    Path.GetExtension(i).
+                    Equals(".lzw", StringComparison.OrdinalIgnoreCase)
+                )
+                {
+                    lzwFiles.Add(i);
+                }
+                else
+                {
+                    lz78Files.Add(i);
+                }
+            }
 
             try
             {
@@ -117,74 +152,114 @@ namespace LZWCompressor
             }
 
             isProcessStoped = true;
-
-            //try
-            //{
-            //    foreach (var file in files)
-            //    {
-            //        
-
-            //        ThreadPool.QueueUserWorkItem(_ =>
-            //        {
-            //            try
-            //            {
-            //                if (radioSecondaryCompression.Checked)
-            //                {
-            //                    
-
-            //                    currentStage = "Primary Decompression";
-            //                    var outDataLZW = new OutData(BytesToIntegers(lz78Result));
-            //                    progressManager.AddTask(outDataLZW);
-            //                    byte[] finalResult = LZW.Decompress(outDataLZW);
-            //                    File.WriteAllBytes(Path.ChangeExtension(file, Path.GetExtension(file).Replace(".lzw2", ".bmp")), finalResult);
-            //                }
-            //                else
-            //                {
-            //                    currentStage = "Primary Decompression";
-            //                    var outDataLZW = new OutData(BytesToIntegers(data));
-            //                    progressManager.AddTask(outDataLZW);
-            //                    byte[] result = LZW.Decompress(outDataLZW);
-            //                    File.WriteAllBytes(Path.ChangeExtension(file, Path.GetExtension(file).Replace(".lzw", ".bmp")), result);
-            //                }
-            //            }
-            //            catch (Exception ex)
-            //            {
-            //                MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            //            }
-            //        });
-            //    }
-            //}
-            //catch (Exception ex)
-            //{
-            //    MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            //}
         }
 
+        private void btnCompressTwice_CheckedChanged(object sender, EventArgs e)
+        {
+            if (isProcessStoped)
+            {
+                isSecondCompress = btnCompressTwice.Checked;
+            }
+            else
+            {
+                btnCompressTwice.Checked = isSecondCompress;
+            }
+        }
+
+        private void btnClearAllFiles_Click(object sender, EventArgs e)
+        {
+            listBoxFiles.Items.Clear();
+        }
+
+        private void btnSelectAllFiles_Click(object sender, EventArgs e)
+        {
+            listBoxFiles.SelectedItems.Clear();
+            for (int i = 0; i < listBoxFiles.Items.Count; i++)
+            {
+                listBoxFiles.SelectedItems.Add(listBoxFiles.Items[i]);
+            }
+        }
+
+        #region Decompress
         private async Task DecompressOnce(List<string> lzwFiles)
         {
             var lzwResult = await DecompressByLZW(InitLZWDecompress(lzwFiles));
-            var oldExtension = lzwFiles[0].Split('.')[1];
-            ChangeDataFiles(lzwFiles, lzwResult, oldExtension);
+            CreateDecompressFiles(lzwFiles, lzwResult);
         }
 
         private async Task DecompressTwice(List<string> lz78Files)
         {
-            var lzwResult = await DecompressByLZW78(InitLZ78Decompress(lzwFiles));
-            var oldExtension = lzwFiles[0].Split('.')[1];
-            ChangeDataFiles(lzwFiles, lzwResult, oldExtension);
+            var lz78Result = await DecompressByLZW78(InitLZ78Decompress(lz78Files));
+            var lzwResult = await DecompressByLZW(InitLZWDecompress(lz78Result));
+            CreateDecompressFiles(lz78Files, lzwResult);
+        }
+
+        private async Task<byte[][]> DecompressByLZW78(List<OutData78> data)
+        {
+            byte[][] decompressedData = new byte[data.Count][];
+            progressManager.Start(data);
+            await Task.Run(() =>
+                Parallel.For(0, data.Count, i =>
+                {
+                    lock (decompressedData)
+                    {
+                        decompressedData[i] = LZ78.Decompress(data[i]);
+                    }
+                })
+            );
+            progressManager.Stop();
+
+            return decompressedData;
+        }
+
+        private async Task<byte[][]> DecompressByLZW(List<OutData> data)
+        {
+            byte[][] decompressedData = new byte[data.Count][];
+            progressManager.Start(data);
+            await Task.Run(() =>
+                Parallel.For(0, data.Count, i =>
+                {
+                    lock (decompressedData)
+                    {
+                        decompressedData[i] = LZW.Decompress(data[i]);
+                    }
+                })
+            );
+            progressManager.Stop();
+
+            return decompressedData;
         }
 
         private List<OutData> InitLZWDecompress(List<string> lzwFiles)
         {
             currentStage = "LZW Decompression";
             UpdateProgressBar(0);
+            Console.WriteLine(File.ReadAllBytes(lzwFiles.First()).Length);
             var data = lzwFiles.
+                Select
+                (
+                    t =>
+
+                    new OutData
+                    (
+                        BytesToIntegers(File.ReadAllBytes(t))
+                    )
+                ).ToList();
+
+            return data;
+        }
+
+        private List<OutData> InitLZWDecompress(byte[][] lz78Result)
+        {
+            currentStage = "LZW Decompression";
+            UpdateProgressBar(0);
+            var data = lz78Result.
                 Select
                 (
                     t =>
                     new OutData
                     (
-                        BytesToIntegers(File.ReadAllBytes(t))
+                        BytesToIntegers(t)
                     )
                 ).ToList();
 
@@ -208,24 +283,11 @@ namespace LZWCompressor
             return data;
         }
 
-        private void btnCompressTwice_CheckedChanged(object sender, EventArgs e)
-        {
-            if (isProcessStoped)
-            {
-                isSecondCompress = btnCompressTwice.Checked;
-            }
-            else
-            {
-                btnCompressTwice.Checked = isSecondCompress;
-            }
-        }
-
-        private static void ChangeDataFiles
-            (
-                List<string> files,
-                byte[][] newData,
-                string newExtension
-            )
+        private void CreateDecompressFiles
+        (
+            List<string> files,
+            byte[][] data
+        )
         {
             for (int i = 0; i < files.Count; i++)
             {
@@ -233,24 +295,26 @@ namespace LZWCompressor
                     Path.ChangeExtension
                     (
                         files[i],
-                        $"{Path.GetExtension(files[i])}.{newExtension}"
+                        ""
                     );
 
-                File.WriteAllBytes(outputFilePath, newData[i]);
+                File.WriteAllBytes(outputFilePath, data[i]);
             }
         }
+        #endregion
 
+        #region Compress
         private async Task CompressOnce(List<string> files)
         {
             var lzwResult = await CompressByLZW(InitLZWCompress(files));
-            ChangeDataFiles(files, lzwResult, "lzw");
+            CreateCompressFiles(files, lzwResult, ".lzw");
         }
 
         private async Task CompressTwice(List<string> files)
         {
             var lzwResult = await CompressByLZW(InitLZWCompress(files));
             var lz78Result = await CompressByLZ78(InitLZ78Compress(lzwResult));
-            ChangeDataFiles(files, lz78Result, "lzw2");
+            CreateCompressFiles(files, lz78Result, ".lzw2");
         }
 
         private List<InputData> InitLZWCompress(List<string> files)
@@ -272,24 +336,6 @@ namespace LZWCompressor
             currentStage = "LZ78 Compression";
             UpdateProgressBar(0);
             return lzwResult.Select(t => new InputDataLZ78(t)).ToList();
-        }
-
-        private async Task<byte[][]> DecompressByLZW(List<OutData> data)
-        {
-            byte[][] decompressedData = new byte[data.Count][];
-            progressManager.Start(data);
-            await Task.Run(() =>
-                Parallel.For(0, data.Count, i =>
-                {
-                    lock (decompressedData)
-                    {
-                        decompressedData[i] = LZW.Decompress(data[i]);
-                    }
-                })
-            );
-            progressManager.Stop();
-
-            return decompressedData;
         }
 
         private async Task<byte[][]> CompressByLZW(List<InputData> data)
@@ -328,6 +374,28 @@ namespace LZWCompressor
             return compressedData;
         }
 
+        private void CreateCompressFiles
+        (
+            List<string> files,
+            byte[][] data,
+            string extension
+        )
+        {
+            for (int i = 0; i < files.Count; i++)
+            {
+                string outputFilePath =
+                    Path.ChangeExtension
+                    (
+                        files[i],
+                        $"{Path.GetExtension(files[i])}{extension}"
+                    );
+
+                File.WriteAllBytes(outputFilePath, data[i]);
+            }
+        }
+        #endregion
+
+        #region Helps Methods
         private List<string> GetValidFiles(params string[] validExtensions)
         {
             var validFiles = new List<string>();
@@ -368,7 +436,7 @@ namespace LZWCompressor
         private static List<(int, byte)> ConvertBytesToTuples(byte[] input)
         {
             List<(int, byte)> tuples = new List<(int, byte)>();
-            for (int i = 0; i < input.Length; i += 3)  // Каждые 3 байта: индекс и символ
+            for (int i = 0; i < input.Length; i += 3)
             {
                 int index = (input[i] << 8) | input[i + 1];
                 byte value = input[i + 2];
@@ -379,10 +447,33 @@ namespace LZWCompressor
 
         private static List<int> BytesToIntegers(byte[] input)
         {
-            List<int> integers = new List<int>();
-            for (int i = 0; i < input.Length; i += 4)
-                integers.Add(BitConverter.ToInt32(input, i));
-            return integers;
+            List<int> codes = new List<int>();
+            int bitBuffer = 0;
+            int bitsInBuffer = 0;
+            const int MaxBits = 12;
+
+            foreach (byte b in input)
+            {
+                bitBuffer |= b << bitsInBuffer;
+                bitsInBuffer += 8;
+
+                while (bitsInBuffer >= MaxBits)
+                {
+                    int code = bitBuffer & ((1 << MaxBits) - 1);
+                    codes.Add(code);
+                    bitBuffer >>= MaxBits;
+                    bitsInBuffer -= MaxBits;
+                }
+            }
+
+            if (bitsInBuffer >= MaxBits)
+            {
+                int code = bitBuffer & ((1 << MaxBits) - 1);
+                codes.Add(code);
+            }
+
+            return codes;
         }
+        #endregion
     }
 }
