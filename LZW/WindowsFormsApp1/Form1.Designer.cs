@@ -9,7 +9,6 @@
         private System.Windows.Forms.Label lblStatus;
         private System.Windows.Forms.Button btnCompress;
         private System.Windows.Forms.Button btnDecompress;
-        private System.Windows.Forms.RadioButton btnCompressTwice;
 
         protected override void Dispose(bool disposing)
         {
@@ -28,9 +27,9 @@
             this.lblStatus = new System.Windows.Forms.Label();
             this.btnCompress = new System.Windows.Forms.Button();
             this.btnDecompress = new System.Windows.Forms.Button();
-            this.btnCompressTwice = new System.Windows.Forms.RadioButton();
             this.buttonClearAllFiles = new System.Windows.Forms.Button();
             this.selectAllFiles = new System.Windows.Forms.Button();
+            this.btnCompressTwice = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // btnAddFiles
@@ -67,6 +66,7 @@
             // 
             // lblStatus
             // 
+            this.lblStatus.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.lblStatus.AutoSize = true;
             this.lblStatus.Location = new System.Drawing.Point(12, 257);
             this.lblStatus.Name = "lblStatus";
@@ -95,18 +95,6 @@
             this.btnDecompress.UseVisualStyleBackColor = true;
             this.btnDecompress.Click += new System.EventHandler(this.btnDecompress_Click);
             // 
-            // btnCompressTwice
-            // 
-            this.btnCompressTwice.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnCompressTwice.AutoSize = true;
-            this.btnCompressTwice.Location = new System.Drawing.Point(15, 304);
-            this.btnCompressTwice.Name = "btnCompressTwice";
-            this.btnCompressTwice.Size = new System.Drawing.Size(177, 20);
-            this.btnCompressTwice.TabIndex = 6;
-            this.btnCompressTwice.Text = "Secondary Compression";
-            this.btnCompressTwice.UseVisualStyleBackColor = true;
-            this.btnCompressTwice.CheckedChanged += new System.EventHandler(this.btnCompressTwice_CheckedChanged);
-            // 
             // buttonClearAllFiles
             // 
             this.buttonClearAllFiles.Location = new System.Drawing.Point(195, 12);
@@ -123,16 +111,28 @@
             this.selectAllFiles.Name = "selectAllFiles";
             this.selectAllFiles.Size = new System.Drawing.Size(96, 23);
             this.selectAllFiles.TabIndex = 8;
-            this.selectAllFiles.Text = "Select All";
+            this.selectAllFiles.Text = "Select all";
             this.selectAllFiles.UseVisualStyleBackColor = true;
             this.selectAllFiles.Click += new System.EventHandler(this.btnSelectAllFiles_Click);
+            // 
+            // btnCompressTwice
+            // 
+            this.btnCompressTwice.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnCompressTwice.AutoSize = true;
+            this.btnCompressTwice.Location = new System.Drawing.Point(12, 308);
+            this.btnCompressTwice.Name = "btnCompressTwice";
+            this.btnCompressTwice.Size = new System.Drawing.Size(124, 20);
+            this.btnCompressTwice.TabIndex = 9;
+            this.btnCompressTwice.Text = "Compress twice";
+            this.btnCompressTwice.UseVisualStyleBackColor = true;
+            this.btnCompressTwice.Click += new System.EventHandler(this.btnCompressTwice_CheckedChanged);
             // 
             // Form1
             // 
             this.ClientSize = new System.Drawing.Size(295, 340);
+            this.Controls.Add(this.btnCompressTwice);
             this.Controls.Add(this.selectAllFiles);
             this.Controls.Add(this.buttonClearAllFiles);
-            this.Controls.Add(this.btnCompressTwice);
             this.Controls.Add(this.btnDecompress);
             this.Controls.Add(this.btnCompress);
             this.Controls.Add(this.lblStatus);
@@ -148,5 +148,6 @@
 
         private System.Windows.Forms.Button buttonClearAllFiles;
         private System.Windows.Forms.Button selectAllFiles;
+        private System.Windows.Forms.CheckBox btnCompressTwice;
     }
 }

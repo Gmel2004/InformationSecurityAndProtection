@@ -6,8 +6,8 @@ namespace WindowsFormsApp1
 {
     public class LZ78
     {
-        private const int MaxDictionarySize = 4096; // Same as LZW's MaxCountCodes
         private const int MaxBits = 12;
+        private const int MaxDictionarySize = 1 << MaxBits;
 
         public byte[] Compress(InputDataLZ78 inputData)
         {
@@ -32,7 +32,10 @@ namespace WindowsFormsApp1
                         }
                         else
                         {
-                            throw new InvalidOperationException($"Prefix not found in dictionary: {prefix}");
+                            throw new InvalidOperationException
+                                (
+                                    $"Prefix not found in dictionary: {prefix}"
+                                );
                         }
                     }
                     else
@@ -43,7 +46,6 @@ namespace WindowsFormsApp1
 
                     compressedData.Add(currentByte);
 
-                    // Only add to dictionary if we haven't reached the maximum size
                     if (dictionary.Count < MaxDictionarySize)
                     {
                         dictionary[current.ToString()] = dictionary.Count + 1;
@@ -52,7 +54,6 @@ namespace WindowsFormsApp1
                 }
             }
 
-            // Handle any remaining data
             if (current.Length > 0)
             {
                 if (current.Length > 1)
@@ -65,7 +66,10 @@ namespace WindowsFormsApp1
                     }
                     else
                     {
-                        throw new InvalidOperationException($"Prefix not found in dictionary: {prefix}");
+                        throw new InvalidOperationException
+                            (
+                                $"Prefix not found in dictionary: {prefix}"
+                            );
                     }
                 }
                 else
@@ -84,14 +88,22 @@ namespace WindowsFormsApp1
             List<byte> decompressedData = new List<byte>();
             Dictionary<int, string> dictionary = new Dictionary<int, string>();
 
-            foreach (var (index, value) in outData.Data)
+            while (outData.CurrentIndex < outData.Length)
             {
+                int index = outData.Data[outData.CurrentIndex].Item1;
+                byte value = outData.Data[outData.CurrentIndex].Item2;
+                outData.CurrentIndex++;
+
                 string currentString;
                 if (index != 0)
                 {
                     if (!dictionary.TryGetValue(index, out currentString))
                     {
-                        throw new InvalidOperationException($"Error: Index {index} not found in dictionary during decompression");
+                        throw new InvalidOperationException
+                            (
+                                $"Error: Index {index} not found in dictionary" +
+                                $"during decompression"
+                            );
                     }
                 }
                 else
@@ -101,13 +113,11 @@ namespace WindowsFormsApp1
 
                 currentString += (char)value;
 
-                // Add the decompressed bytes
                 foreach (char c in currentString)
                 {
                     decompressedData.Add((byte)c);
                 }
 
-                // Add to dictionary if we haven't reached the maximum size
                 if (dictionary.Count < MaxDictionarySize)
                 {
                     dictionary[dictionary.Count + 1] = currentString;
